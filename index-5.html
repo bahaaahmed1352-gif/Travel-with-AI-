@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مخطط السفر بالذكاء الاصطناعي</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-plane"></i>
+                <span>مخطط السفر AI</span>
+            </div>
+            <nav class="nav">
+                <a href="#plan">تخطيط الرحلة</a>
+                <a href="#itinerary">البرنامج</a>
+                <a href="#budget">الميزانية</a>
+            </nav>
+            <button onclick="startPlanning()" class="btn-primary">ابدأ رحلتك</button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>خطط رحلتك المثالية مع الذكاء الاصطناعي</h1>
+            <p>وكيل سفر شخصي يجعل كل رحلة لا تُنسى</p>
+            <button onclick="startPlanning()" class="btn-primary large">ابدأ الآن</button>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Trip Input Section -->
+        <section id="plan" class="input-section">
+            <h2>خطط رحلتك</h2>
+            <form id="trip-form" onsubmit="generateItinerary(event)">
+                <div class="form-grid">
+                    <!-- Destination -->
+                    <div class="form-group">
+                        <label for="destination">الوجهة</label>
+                        <select id="destination" required>
+                            <option value="">اختر الوجهة</option>
+                            <option value="dubai">دبي</option>
+                            <option value="abudhabi">أبوظبي</option>
+                            <option value="rasalkhaimah">رأس الخيمة</option>
+                        </select>
+                    </div>
+                    <!-- Days -->
+                    <div class="form-group">
+                        <label for="days">عدد الأيام</label>
+                        <input type="number" id="days" min="1" max="14" value="5" required>
+                    </div>
+                    <!-- Budget -->
+                    <div class="form-group">
+                        <label for="budget">الميزانية الإجمالية (درهم)</label>
+                        <input type="number" id="budget" min="1000" value="5000" required>
+                    </div>
+                    <!-- Trip Type -->
+                    <div class="form-group">
+                        <label>نوع الرحلة</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="tripType" value="family" checked> عائلي</label>
+                            <label><input type="radio" name="tripType" value="business"> عمل</label>
+                            <label><input type="radio" name="tripType" value="adventure"> مغامرة</label>
+                            <label><input type="radio" name="tripType" value="relax"> استرخاء</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary generate-btn">
+                    <span>ولّد الخطة</span>
+                    <i class="fas fa-magic"></i>
+                </button>
+            </form>
+        </section>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>يتم توليد خطة سفرك الذكية...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="results hidden">
+            <!-- Interactive Map -->
+            <section class="map-section">
+                <h2>مسار رحلتك</h2>
+                <div id="map" class="map-container"></div>
+            </section>
+
+            <!-- Itinerary -->
+            <section id="itinerary" class="itinerary-section">
+                <h2>برنامج الرحلة اليومي</h2>
+                <div id="itinerary-list" class="itinerary-list"></div>
+            </section>
+
+            <!-- Budget -->
+            <section id="budget" class="budget-section">
+                <h2>توزيع الميزانية</h2>
+                <div class="budget-table">
+                    <table id="budget-table">
+                        <thead>
+                            <tr>
+                                <th>الفئة</th>
+                                <th>النسبة</th>
+                                <th>المبلغ (درهم)</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Booking Cards -->
+            <section class="bookings-section">
+                <h2>اقتراحات الحجوزات</h2>
+                <div id="booking-cards" class="cards-grid"></div>
+            </section>
+
+            <!-- Export -->
+            <div class="export-section">
+                <button onclick="exportToPDF()" class="btn-primary">
+                    <i class="fas fa-download"></i> تصدير كـ PDF
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="modal hidden">
+        <div class="modal-content">
+            <span onclick="closeModal()" class="close">&times;</span>
+            <h3>تأكيد الحجز</h3>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button onclick="closeModal()" class="btn-secondary">إلغاء</button>
+                <button onclick="confirmBooking()" class="btn-primary">تأكيد الحجز</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden">تم الحجز بنجاح!</div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 مخطط السفر AI - جميع الحقوق محفوظة</p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
